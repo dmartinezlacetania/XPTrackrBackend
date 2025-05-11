@@ -71,23 +71,35 @@ class AuthController extends Controller
         $user = Auth::user();
         
         $request->validate([
-            'name' => 'string|max:255',
-            'email' => 'string|email|max:255|unique:users,email,' . $user->id,
-            'current_password' => 'required_with:new_password|string',
-            'new_password' => 'string|min:8|confirmed|nullable',
-            'avatar' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+            'name' => 'sometimes|filled|string|max:255',
+            'email' => 'sometimes|filled|string|email|max:255|unique:users,email,' . $user->id,
+            'current_password' => ['sometimes', 'required_with:new_password', 'filled', 'string'],
+            'new_password' => [
+                'nullable', 
+                'filled', 
+                'string', 
+                'min:8', 
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'
+            ],
+            'avatar' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ], [
+            'new_password.filled' => 'La nueva contraseña no puede estar vacía.',
+            'new_password.min' => 'La nueva contraseña debe tener al menos 8 caracteres.',
+            'new_password.regex' => 'La contraseña debe contener al menos una letra mayúscula, una minúscula, un número y un carácter especial.',
+            'new_password.confirmed' => 'La confirmación de la nueva contraseña no coincide.'
         ]);
-
+    
         $updateData = [];
-
+    
         if ($request->has('name')) {
             $updateData['name'] = $request->name;
         }
-
+    
         if ($request->has('email')) {
             $updateData['email'] = $request->email;
         }
-
+    
         if ($request->hasFile('avatar')) {
             $image = $request->file('avatar');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
@@ -100,22 +112,57 @@ class AuthController extends Controller
             
             $updateData['avatar'] = 'avatars/' . $imageName;
         }
-
+    
         if ($request->has('current_password')) {
             if (!Hash::check($request->current_password, $user->password)) {
                 return response()->json([
-                    'message' => 'La contraseña actual es incorrecta'
+                    'message' => 'La contraseña actual es incorrecta',
+                    'errors' => [
+                        'current_password' => ['La contraseña actual proporcionada no coincide con nuestros registros.']
+                    ]
                 ], 422);
             }
             
-            $updateData['password'] = bcrypt($request->new_password);
+            if ($request->filled('new_password')) {
+                $updateData['password'] = bcrypt($request->new_password);
+            } else {
+                return response()->json([
+                    'message' => 'La nueva contraseña no puede estar vacía',
+                    'errors' => [
+                        'new_password' => ['Debes proporcionar una nueva contraseña válida.']
+                    ]
+                ], 422);
+            }
         }
-
+    
+        // Si no hay datos para actualizar después de todas las validaciones y procesamientos
+        if (empty($updateData)) {
+            return response()->json([
+                'message' => 'No se proporcionaron datos válidos para actualizar o los datos son los mismos que los actuales.',
+                'errors' => [
+                    'general' => ['No hay campos para actualizar. Asegúrate de que los campos enviados no estén vacíos y sean diferentes a los actuales.']
+                ]
+            ], 422);
+        }
+    
         User::where('id', $user->id)->update($updateData);
-
+        
+        $updatedUser = User::find($user->id);
+        
+        if (isset($updateData['password'])) {
+            
+            $token = $updatedUser->createToken('api_token')->plainTextToken;
+            
+            return response()->json([
+                'message' => 'Perfil y contraseña actualizados exitosamente',
+                'user' => $updatedUser,
+                'auth_token' => $token
+            ]);
+        }
+        
         return response()->json([
             'message' => 'Perfil actualizado exitosamente',
-            'user' => User::find($user->id)
+            'user' => $updatedUser
         ]);
     }
 
