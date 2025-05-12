@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comments', function (Blueprint $table) {
+        Schema::create('libraries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->unsignedBigInteger('rawg_id'); // <-- just this, no constrained()
-            $table->text('comment');
+            $table->unsignedBigInteger('rawg_id');
+            $table->enum('status', ['playing', 'plan_to_play', 'completed', 'dropped', 'on_hold']);
+            $table->text('notes')->nullable();
+            $table->unsignedTinyInteger('rating')->nullable();
             $table->timestamps();
+            $table->unique(['user_id', 'rawg_id']);
         });
     }
 
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('comments');
+        Schema::dropIfExists('libraries');
     }
 };
