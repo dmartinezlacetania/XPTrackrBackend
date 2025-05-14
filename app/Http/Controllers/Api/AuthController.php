@@ -180,4 +180,38 @@ class AuthController extends Controller
     {
         return response()->json(['message' => 'CSRF cookie set']);
     }
+
+    public function updateAvatar(Request $request)
+    {
+        $user = Auth::user();
+        
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            $image = $request->file('avatar');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            
+            // Crear directorio si no existe
+            if (!file_exists(public_path('avatars'))) {
+                mkdir(public_path('avatars'), 0755, true);
+            }
+            
+            $image->move(public_path('avatars'), $imageName);
+
+            // Eliminar imagen anterior con ruta completa
+            if ($user->avatar && file_exists(public_path($user->avatar))) {
+                unlink(public_path($user->avatar));
+            }
+
+            $user->avatar = $imageName;
+            User::where('id', $user->id)->update(['avatar' => $user->avatar]);
+        }
+
+        return response()->json([
+            'message' => 'Avatar actualizado exitosamente',
+            'user' => $user
+        ]);
+    }
 }

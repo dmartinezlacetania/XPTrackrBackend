@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->group(function () {
         return \App\Models\User::findOrFail($id);
     });
     Route::post('update-profile', [AuthController::class, 'updateProfile']);
+    Route::post('update-avatar', [AuthController::class, 'updateAvatar']);
 });
 
 // Rutas para búsqueda de juegos (no requieren autenticación)
