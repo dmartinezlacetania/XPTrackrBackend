@@ -93,16 +93,24 @@ class GameSearchController extends Controller
         $tomorrow = date('Y-m-d', strtotime('+1 day'));
         $nextWeek = date('Y-m-d', strtotime('+7 days'));
 
-        $response = Http::get(self::RAWG_URL, [
-            'key' => config('services.rawg.key'),
+        $queryParams = [
             'dates' => "{$tomorrow},{$nextWeek}",
-            'ordering' => '-released',
-            'page_size' => self::PAGE_SIZE
-        ]);
+            'ordering' => 'released',
+            'key' => config('services.rawg.key'),
+            'page_size' => self::PAGE_SIZE // Manteniendo la consistencia con otros métodos
+        ];
 
+        $response = Http::get(self::RAWG_URL, $queryParams);
 
+        if ($response->successful()) {
+            $data = $response->json(); // Parsear la respuesta JSON
+            return response()->json($data); // Devolver los datos directamente
+        }
+
+        // Si la respuesta no fue exitosa
         return response()->json([
-            'error' => 'Error al consultar la API de RAWG'
+            'error' => 'Error al consultar la API de RAWG para los juegos de la próxima semana',
+            'details' => $response->json() // Opcional: devolver detalles del error de la API
         ], $response->status());
     }
 }
