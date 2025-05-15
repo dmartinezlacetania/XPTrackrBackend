@@ -27,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Rutas para búsqueda de juegos (no requieren autenticación)
 Route::get('/games', [GameSearchController::class, 'search']);
 Route::get('/games/{id}', [GameSearchController::class, 'show']);
+Route::get('/games/next-week', [GameSearchController::class, 'next_week_games']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // Rutas para la biblioteca de juegos (requieren autenticación)

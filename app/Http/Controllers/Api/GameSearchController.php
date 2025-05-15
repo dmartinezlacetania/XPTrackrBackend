@@ -87,4 +87,22 @@ class GameSearchController extends Controller
             'error' => 'Juego no encontrado'
         ], 404);
     }
+
+    public function next_week_games()
+    {
+        $tomorrow = date('Y-m-d', strtotime('+1 day'));
+        $nextWeek = date('Y-m-d', strtotime('+7 days'));
+
+        $response = Http::get(self::RAWG_URL, [
+            'key' => config('services.rawg.key'),
+            'dates' => "{$tomorrow},{$nextWeek}",
+            'ordering' => '-released',
+            'page_size' => self::PAGE_SIZE
+        ]);
+
+
+        return response()->json([
+            'error' => 'Error al consultar la API de RAWG'
+        ], $response->status());
+    }
 }
