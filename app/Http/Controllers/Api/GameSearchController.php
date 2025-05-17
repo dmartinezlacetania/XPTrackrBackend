@@ -91,7 +91,7 @@ class GameSearchController extends Controller
     public function next_week_games()
     {
         $tomorrow = date('Y-m-d', strtotime('+1 day'));
-        $nextWeek = date('Y-m-d', strtotime('+7 days'));
+        $nextWeek = date('Y-m-d', strtotime('+30 days'));
 
         $queryParams = [
             'dates' => "{$tomorrow},{$nextWeek}",

@@ -51,27 +51,25 @@ class FriendController extends Controller
     // Aceptar solicitud de amistad
     public function accept($id)
     {
-        $friendship = Friend::where('user_id', $id)
-            ->where('friend_id', Auth::id())
+        // Buscar la solicitud por su ID principal
+        $friendship = Friend::where('id', $id)
+            ->where('friend_id', Auth::id()) // Verificar que el receptor sea el usuario autenticado
             ->where('status', 'pending')
             ->firstOrFail();
-
+    
         $friendship->status = 'accepted';
         $friendship->save();
-
+    
         return response()->json($friendship);
     }
 
     // Rechazar o eliminar amistad
     public function destroy($id)
     {
-        $userId = Auth::id();
-
-        $friendship = Friend::where(function($q) use ($userId, $id) {
-                $q->where('user_id', $userId)->where('friend_id', $id);
-            })
-            ->orWhere(function($q) use ($userId, $id) {
-                $q->where('user_id', $id)->where('friend_id', $userId);
+        $friendship = Friend::where('id', $id)
+            ->where(function($q) {
+                $q->where('user_id', Auth::id())
+                  ->orWhere('friend_id', Auth::id());
             })
             ->firstOrFail();
 

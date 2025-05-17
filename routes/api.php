@@ -31,9 +31,9 @@ Route::get('/games/{id}', [GameSearchController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // Rutas para la biblioteca de juegos (requieren autenticación)
-    Route::get('/library', [LibraryController::class, 'index']);
+    Route::get('/library/{userId?}', [LibraryController::class, 'index']);
+    Route::get('/library/{userId?}/{gameId}', [LibraryController::class, 'show']);
     Route::post('/library', [LibraryController::class, 'store']);
-    Route::get('/library/{gameId}', [LibraryController::class, 'show']);
     Route::put('/library/{gameId}', [LibraryController::class, 'update']);
     Route::delete('/library/{gameId}', [LibraryController::class, 'destroy']);
 

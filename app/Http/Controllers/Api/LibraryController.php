@@ -9,10 +9,20 @@ use Illuminate\Support\Facades\Auth;
 
 class LibraryController extends Controller
 {
-    public function index()
+    public function index($userId = null)
     {
-        $library = GameLibrary::where('user_id', Auth::id())->get();
-        return response()->json($library);
+        $targetUserId = $userId ?? Auth::id();
+        $games = GameLibrary::where('user_id', $targetUserId)->get();
+        return response()->json($games);
+    }
+
+    public function show($userId = null, $gameId)
+    {
+        $targetUserId = $userId ?? Auth::id();
+        $game = GameLibrary::where('user_id', $targetUserId)
+                       ->where('game_id', $gameId)
+                       ->firstOrFail();
+        return response()->json($game);
     }
 
     public function store(Request $request)
@@ -39,14 +49,14 @@ class LibraryController extends Controller
         return response()->json($library);
     }
 
-    public function show($rawgId)
-    {
-        $entry = GameLibrary::where('user_id', Auth::id())
-            ->where('rawg_id', $rawgId)
-            ->first();
+    // public function show($rawgId)
+    // {
+    //     $entry = GameLibrary::where('user_id', Auth::id())
+    //         ->where('rawg_id', $rawgId)
+    //         ->first();
 
-        return response()->json($entry);
-    }
+    //     return response()->json($entry);
+    // }
 
     public function update(Request $request, $rawgId)
     {
