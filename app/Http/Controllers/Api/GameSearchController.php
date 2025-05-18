@@ -88,7 +88,7 @@ class GameSearchController extends Controller
         ], 404);
     }
 
-    public function next_week_games()
+    public function next_games()
     {
         $tomorrow = date('Y-m-d', strtotime('+1 day'));
         $nextWeek = date('Y-m-d', strtotime('+30 days'));
