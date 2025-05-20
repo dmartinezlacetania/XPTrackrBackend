@@ -39,46 +39,41 @@ class AuthController extends Controller
             'user' => $user,
             // 'token' => $token,
         ], 201);
-        
     }
 
     public function login(Request $request)
     {
-        
-
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        $token = $user->createToken('api_token')->plainTextToken;
+        $user = Auth::user();
 
         return response()->json([
             'message' => 'Login successful',
             'user' => $user,
-            'auth_token' => $token,
         ]);
     }
+
 
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
-        
+
         $request->validate([
             'name' => 'sometimes|filled|string|max:255',
             'email' => 'sometimes|filled|string|email|max:255|unique:users,email,' . $user->id,
             'current_password' => ['sometimes', 'required_with:new_password', 'filled', 'string'],
             'new_password' => [
-                'nullable', 
-                'filled', 
-                'string', 
-                'min:8', 
+                'nullable',
+                'filled',
+                'string',
+                'min:8',
                 'confirmed',
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'
             ],
@@ -89,30 +84,30 @@ class AuthController extends Controller
             'new_password.regex' => 'La contraseña debe contener al menos una letra mayúscula, una minúscula, un número y un carácter especial.',
             'new_password.confirmed' => 'La confirmación de la nueva contraseña no coincide.'
         ]);
-    
+
         $updateData = [];
-    
+
         if ($request->has('name')) {
             $updateData['name'] = $request->name;
         }
-    
+
         if ($request->has('email')) {
             $updateData['email'] = $request->email;
         }
-    
+
         if ($request->hasFile('avatar')) {
             $image = $request->file('avatar');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('avatars'), $imageName);
-            
+
             // Si existe una imagen anterior, la eliminamos
             if ($user->avatar && file_exists(public_path($user->avatar))) {
                 unlink(public_path($user->avatar));
             }
-            
+
             $updateData['avatar'] = 'avatars/' . $imageName;
         }
-    
+
         if ($request->has('current_password')) {
             if (!Hash::check($request->current_password, $user->password)) {
                 return response()->json([
@@ -122,7 +117,7 @@ class AuthController extends Controller
                     ]
                 ], 422);
             }
-            
+
             if ($request->filled('new_password')) {
                 $updateData['password'] = bcrypt($request->new_password);
             } else {
@@ -134,7 +129,7 @@ class AuthController extends Controller
                 ], 422);
             }
         }
-    
+
         // Si no hay datos para actualizar después de todas las validaciones y procesamientos
         if (empty($updateData)) {
             return response()->json([
@@ -144,22 +139,22 @@ class AuthController extends Controller
                 ]
             ], 422);
         }
-    
+
         User::where('id', $user->id)->update($updateData);
-        
+
         $updatedUser = User::find($user->id);
-        
+
         if (isset($updateData['password'])) {
-            
+
             $token = $updatedUser->createToken('api_token')->plainTextToken;
-            
+
             return response()->json([
                 'message' => 'Perfil y contraseña actualizados exitosamente',
                 'user' => $updatedUser,
                 'auth_token' => $token
             ]);
         }
-        
+
         return response()->json([
             'message' => 'Perfil actualizado exitosamente',
             'user' => $updatedUser
@@ -184,7 +179,7 @@ class AuthController extends Controller
     public function updateAvatar(Request $request)
     {
         $user = Auth::user();
-        
+
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
@@ -192,12 +187,12 @@ class AuthController extends Controller
         if ($request->hasFile('avatar')) {
             $image = $request->file('avatar');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
-            
+
             // Crear directorio si no existe
             if (!file_exists(public_path('avatars'))) {
                 mkdir(public_path('avatars'), 0755, true);
             }
-            
+
             $image->move(public_path('avatars'), $imageName);
 
             // Eliminar imagen anterior con ruta completa

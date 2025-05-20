@@ -20,7 +20,7 @@ class LibraryController extends Controller
     {
         $targetUserId = $userId ?? Auth::id();
         $game = GameLibrary::where('user_id', $targetUserId)
-                       ->where('game_id', $gameId)
+                       ->where('rawg_id', $gameId)
                        ->firstOrFail();
         return response()->json($game);
     }
