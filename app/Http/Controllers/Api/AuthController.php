@@ -14,14 +14,13 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    //
-
+    // Funció per registrar un nou usuari al sistema
     public function register(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed', //Mejorar la seguridad de la contraseña
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         $user = User::create([
@@ -30,17 +29,15 @@ class AuthController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
-        // $token = $user->createToken('api_token')->plainTextToken;
-
         Auth::login($user);
 
         return response()->json([
             'message' => 'User registered successfully',
             'user' => $user,
-            // 'token' => $token,
         ], 201);
     }
 
+    // Funció per autenticar un usuari existent
     public function login(Request $request)
     {
         $request->validate([
@@ -60,7 +57,7 @@ class AuthController extends Controller
         ]);
     }
 
-
+    // Funció per actualitzar el perfil d'usuari
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
@@ -100,7 +97,6 @@ class AuthController extends Controller
             $imageName = time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('avatars'), $imageName);
 
-            // Si existe una imagen anterior, la eliminamos
             if ($user->avatar && file_exists(public_path($user->avatar))) {
                 unlink(public_path($user->avatar));
             }
@@ -130,7 +126,6 @@ class AuthController extends Controller
             }
         }
 
-        // Si no hay datos para actualizar después de todas las validaciones y procesamientos
         if (empty($updateData)) {
             return response()->json([
                 'message' => 'No se proporcionaron datos válidos para actualizar o los datos son los mismos que los actuales.',
@@ -161,6 +156,7 @@ class AuthController extends Controller
         ]);
     }
 
+    // Funció per tancar la sessió de l'usuari
     public function logout(Request $request)
     {
         Auth::guard('web')->logout();
@@ -171,11 +167,13 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out successfully']);
     }
 
+    // Funció per configurar la cookie CSRF
     public function csrfCookie(Request $request)
     {
         return response()->json(['message' => 'CSRF cookie set']);
     }
 
+    // Funció per actualitzar l'avatar de l'usuari
     public function updateAvatar(Request $request)
     {
         $user = Auth::user();

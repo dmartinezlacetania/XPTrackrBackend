@@ -21,6 +21,8 @@ return [
 
     'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:4200')],
 
+    // 'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:4200', 'http://infla.cat:38000')],
+
     'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],

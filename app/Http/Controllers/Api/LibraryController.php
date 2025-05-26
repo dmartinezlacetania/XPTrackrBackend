@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class LibraryController extends Controller
 {
+    // Funció per obtenir tots els jocs de la biblioteca d'un usuari
     public function index($userId = null)
     {
         $targetUserId = $userId ?? Auth::id();
@@ -16,6 +17,7 @@ class LibraryController extends Controller
         return response()->json($games);
     }
 
+    // Funció per obtenir els detalls d'un joc específic de la biblioteca
     public function show($userId = null, $gameId)
     {
         $targetUserId = $userId ?? Auth::id();
@@ -25,6 +27,7 @@ class LibraryController extends Controller
         return response()->json($game);
     }
 
+    // Funció per afegir o actualitzar un joc a la biblioteca
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -79,6 +82,7 @@ class LibraryController extends Controller
         return response()->json($entry);
     }
 
+    // Funció per eliminar un joc de la biblioteca
     public function destroy($rawgId)
     {
         GameLibrary::where('user_id', Auth::id())

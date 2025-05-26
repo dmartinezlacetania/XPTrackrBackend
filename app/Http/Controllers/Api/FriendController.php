@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class FriendController extends Controller
 {
-    // Listar amigos confirmados
+    // Funció per obtenir la llista d'amics confirmats
     public function index()
     {
         $userId = Auth::id();
@@ -24,7 +24,7 @@ class FriendController extends Controller
         return response()->json($friends);
     }
 
-    // Enviar solicitud de amistad
+    // Funció per enviar una sol·licitud d'amistat
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -48,7 +48,7 @@ class FriendController extends Controller
         return response()->json($friendship);
     }
 
-    // Aceptar solicitud de amistad
+    // Funció per acceptar una sol·licitud d'amistat
     public function accept($id)
     {
         // Buscar la solicitud por su ID principal
@@ -63,7 +63,7 @@ class FriendController extends Controller
         return response()->json($friendship);
     }
 
-    // Rechazar o eliminar amistad
+    // Funció per eliminar una amistat o rebutjar una sol·licitud
     public function destroy($id)
     {
         $friendship = Friend::where('id', $id)
@@ -78,6 +78,7 @@ class FriendController extends Controller
         return response()->json(['message' => 'Amistad eliminada o solicitud rechazada']);
     }
 
+    // Funció per cercar usuaris
     public function users(Request $request)
     {
         $search = $request->input('search');
@@ -96,7 +97,7 @@ class FriendController extends Controller
         return response()->json($users);
     }
 
-    // Solicitudes de amistad recibidas (pendientes)
+    // Funció per obtenir les sol·licituds d'amistat pendents
     public function receivedRequests()
     {
         $userId = Auth::id();

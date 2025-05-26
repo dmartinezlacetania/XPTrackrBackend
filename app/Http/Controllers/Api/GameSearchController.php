@@ -7,12 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\GameLibrary;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Pail\ValueObjects\Origin\Console;
 
 class GameSearchController extends Controller
 {
     private const RAWG_URL = 'https://api.rawg.io/api/games';
     private const PAGE_SIZE = 10;
 
+    // Funció per cercar jocs a l'API de RAWG
     public function search(Request $request)
     {
         $validated = $request->validate([
@@ -54,6 +56,7 @@ class GameSearchController extends Controller
         ], $response->status());
     }
 
+    // Funció per obtenir els detalls d'un joc específic
     public function show($id)
     {
         $response = Http::get(self::RAWG_URL . "/{$id}", [
@@ -88,6 +91,7 @@ class GameSearchController extends Controller
         ], 404);
     }
 
+    // Funció per obtenir els propers llançaments de jocs
     public function next_games()
     {
         $tomorrow = date('Y-m-d', strtotime('+1 day'));
@@ -97,20 +101,19 @@ class GameSearchController extends Controller
             'dates' => "{$tomorrow},{$nextWeek}",
             'ordering' => 'released',
             'key' => config('services.rawg.key'),
-            'page_size' => self::PAGE_SIZE // Manteniendo la consistencia con otros métodos
+            'page_size' => self::PAGE_SIZE
         ];
 
         $response = Http::get(self::RAWG_URL, $queryParams);
 
         if ($response->successful()) {
-            $data = $response->json(); // Parsear la respuesta JSON
-            return response()->json($data); // Devolver los datos directamente
+            $data = $response->json();
+            return response()->json($data);
         }
 
-        // Si la respuesta no fue exitosa
         return response()->json([
             'error' => 'Error al consultar la API de RAWG para los juegos de la próxima semana',
-            'details' => $response->json() // Opcional: devolver detalles del error de la API
+            'details' => $response->json()
         ], $response->status());
     }
 }

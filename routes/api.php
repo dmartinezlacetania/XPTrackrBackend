@@ -8,40 +8,44 @@ use App\Http\Controllers\Api\GameSearchController;
 use App\Http\Controllers\Api\LibraryController;
 
 
-Route::post('register', [AuthController::class, 'register']);
-Route::get('/sanctum/csrf-cookie', [AuthController::class, 'csrfCookie']);
-Route::post('login', [AuthController::class, 'login']);
+// Rutes d'autenticació
+Route::post('register', [AuthController::class, 'register']); // Registre d'usuaris nous
+Route::get('/sanctum/csrf-cookie', [AuthController::class, 'csrfCookie']); // Obtenció de cookie CSRF
+Route::post('login', [AuthController::class, 'login']); // Inici de sessió
 
+// Grup de rutes protegides per autenticació
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::get('user', function (Request $request) {
+    // Rutes de gestió d'usuaris
+    Route::post('logout', [AuthController::class, 'logout']); // Tancament de sessió
+    Route::get('user', function (Request $request) { // Obtenció de l'usuari actual
         return $request->user();
     });
-    Route::get('/user/{id}', function ($id) {
+    Route::get('/user/{id}', function ($id) { // Obtenció d'un usuari específic
         return \App\Models\User::findOrFail($id);
     });
-    Route::post('update-profile', [AuthController::class, 'updateProfile']);
-    Route::post('update-avatar', [AuthController::class, 'updateAvatar']);
+    Route::post('update-profile', [AuthController::class, 'updateProfile']); // Actualització del perfil
+    Route::post('update-avatar', [AuthController::class, 'updateAvatar']); // Actualització de l'avatar
 });
 
-// Rutas para búsqueda de juegos (no requieren autenticación)
-Route::get('/games', [GameSearchController::class, 'search']);
-Route::get('/games/next-games', [GameSearchController::class, 'next_games']); // Mover esta línea antes de /games/{id}
-Route::get('/games/{id}', [GameSearchController::class, 'show']);
+// Rutes de cerca de jocs (públiques)
+Route::get('/games', [GameSearchController::class, 'search']); // Cerca de jocs
+Route::get('/games/next-games', [GameSearchController::class, 'next_games']); // Propers llançaments
+Route::get('/games/{id}', [GameSearchController::class, 'show']); // Detalls d'un joc
 
+// Grup de rutes protegides per autenticació
 Route::middleware('auth:sanctum')->group(function () {
-    // Rutas para la biblioteca de juegos (requieren autenticación)
-    Route::get('/library/{userId?}', [LibraryController::class, 'index']);
-    Route::get('/library/{userId?}/{gameId}', [LibraryController::class, 'show']);
-    Route::post('/library', [LibraryController::class, 'store']);
-    Route::put('/library/{gameId}', [LibraryController::class, 'update']);
-    Route::delete('/library/{gameId}', [LibraryController::class, 'destroy']);
+    // Rutes de la biblioteca de jocs
+    Route::get('/library/{userId?}', [LibraryController::class, 'index']); // Llistat de la biblioteca
+    Route::get('/library/{userId?}/{gameId}', [LibraryController::class, 'show']); // Detalls d'un joc a la biblioteca
+    Route::post('/library', [LibraryController::class, 'store']); // Afegir joc a la biblioteca
+    Route::put('/library/{gameId}', [LibraryController::class, 'update']); // Actualitzar estat d'un joc
+    Route::delete('/library/{gameId}', [LibraryController::class, 'destroy']); // Eliminar joc de la biblioteca
 
-    // Friends
-    Route::get('/users', [FriendController::class, 'users']);
-    Route::get('/friends', [FriendController::class, 'index']);
-    Route::get('/friends/requests', [FriendController::class, 'receivedRequests']);
-    Route::post('/friends', [FriendController::class, 'store']);
-    Route::post('/friends/{id}/accept', [FriendController::class, 'accept']);
-    Route::delete('/friends/{id}', [FriendController::class, 'destroy']);
+    // Rutes d'amics
+    Route::get('/users', [FriendController::class, 'users']); // Cerca d'usuaris
+    Route::get('/friends', [FriendController::class, 'index']); // Llistat d'amics
+    Route::get('/friends/requests', [FriendController::class, 'receivedRequests']); // Sol·licituds pendents
+    Route::post('/friends', [FriendController::class, 'store']); // Enviar sol·licitud d'amistat
+    Route::post('/friends/{id}/accept', [FriendController::class, 'accept']); // Acceptar sol·licitud
+    Route::delete('/friends/{id}', [FriendController::class, 'destroy']); // Eliminar amistat
 });
